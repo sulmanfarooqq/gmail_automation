@@ -2,7 +2,18 @@
 {% block content %}
 <div class="page-header">
   <h1 class="page-title">Email Detail</h1>
-  <a href="/inbox" class="btn btn-ghost btn-sm">← Back to Inbox</a>
+  <div style="display:flex; gap:0.5rem;">
+    {% if email.human_handled %}
+    <form method="POST" action="/email/{{ email.id }}/re-enable-ai" style="display:inline;">
+      <button class="btn btn-sm" style="background:var(--accent-light);color:var(--accent-dark);border:1px solid var(--accent);">🤖 Re-enable AI</button>
+    </form>
+    {% else %}
+    <form method="POST" action="/email/{{ email.id }}/take-over" style="display:inline;">
+      <button class="btn btn-ghost btn-sm">👤 Take Over (Stop AI)</button>
+    </form>
+    {% endif %}
+    <a href="/inbox" class="btn btn-ghost btn-sm">← Back to Inbox</a>
+  </div>
 </div>
 
 <div style="display:grid; grid-template-columns:2fr 1fr; gap:1.5rem;">
@@ -24,6 +35,21 @@
   <!-- AI Panel -->
   <div style="display:flex; flex-direction:column; gap:1rem;">
     <!-- Classification -->
+    <!-- Human Handoff Status -->
+    {% if email.human_handled %}
+    <div class="panel-section" style="border-color:var(--accent);">
+      <div class="panel-header" style="background:var(--accent-light); color:var(--accent-dark);">
+        👤 You're handling this conversation
+      </div>
+      <div class="panel-body" style="font-size:0.85rem;">
+        <p style="margin-bottom:0.5rem;">AI is paused for this thread. No drafts will be generated and follow-ups are stopped.</p>
+        <form method="POST" action="/email/{{ email.id }}/re-enable-ai">
+          <button class="btn btn-sm" style="background:var(--accent);color:white;">🤖 Re-enable AI</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
     {% if email.intent %}
     <div class="panel-section">
       <div class="panel-header">🧠 AI Classification</div>

@@ -31,7 +31,9 @@ class Database:
                 received_at TEXT,
                 is_incoming INTEGER,
                 labels TEXT,
-                is_processed INTEGER DEFAULT 0
+                is_processed INTEGER DEFAULT 0,
+                human_handled INTEGER DEFAULT 0,
+                human_handled_at TEXT
             );
             
             CREATE TABLE IF NOT EXISTS classifications (
@@ -172,6 +174,55 @@ class Database:
             WHERE e.id = ?
         """, (email_id,)).fetchone()
         return dict(row) if row else None
+    
+    def get_all_emails_in_thread(self, thread_id: str) -> list[dict]:
+        """Get all emails in a thread."""
+        rows = self.conn.execute("""
+            SELECT e.*, c.intent, c.priority, c.sentiment, c.is_lead,
+                   d.status as draft_status,
+                   d.id as draft_id, d.body as draft_body
+            FROM emails e
+            LEFT JOIN classifications c ON e.id = c.email_id
+            LEFT JOIN drafts d ON e.id = d.email_id
+            WHERE e.thread_id = ?
+            ORDER BY e.received_at ASC
+        """, (thread_id,)).fetchall()
+        return [dict(r) for r in rows]
+    
+    # ─── Human Handoff ─────────────────────────────────────────
+    
+    def mark_thread_human_handled(self, thread_id: str):
+        """Mark all emails in a thread as human-handled (stops AI)."""
+        now = datetime.now().isoformat()
+        self.conn.execute("""
+            UPDATE emails SET human_handled = 1, human_handled_at = ?
+            WHERE thread_id = ?
+        """, (now, thread_id))
+        # Also stop any running follow-ups for emails in this thread
+        self.conn.execute("""
+            UPDATE followups SET status = 'stopped'
+            WHERE original_email_id IN (
+                SELECT id FROM emails WHERE thread_id = ?
+            ) AND status = 'running'
+        """, (thread_id,))
+        self.conn.commit()
+    
+    def reenable_ai_for_thread(self, thread_id: str):
+        """Re-enable AI processing for a thread."""
+        self.conn.execute("""
+            UPDATE emails SET human_handled = 0, human_handled_at = NULL
+            WHERE thread_id = ?
+        """, (thread_id,))
+        self.conn.commit()
+    
+    def is_thread_human_handled(self, thread_id: str) -> bool:
+        """Check if a thread is under human control."""
+        row = self.conn.execute("""
+            SELECT human_handled FROM emails
+            WHERE thread_id = ? AND human_handled = 1
+            LIMIT 1
+        """, (thread_id,)).fetchone()
+        return row is not None
     
     # ─── Classifications ──────────────────────────────────────
     

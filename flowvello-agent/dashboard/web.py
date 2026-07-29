@@ -121,6 +121,30 @@ def analytics():
     return render_template("analytics.html", totals=totals, daily=daily, active="analytics")
 
 
+@app.route("/email/<email_id>/take-over", methods=["POST"])
+def take_over_thread(email_id):
+    """Human takes over a conversation — stops AI + follow-ups."""
+    email = db.get_email_by_id(email_id)
+    if email:
+        db.mark_thread_human_handled(email["thread_id"])
+        flash("👤 You've taken over this conversation. AI will stay quiet.", "info")
+    else:
+        flash("Email not found", "error")
+    return redirect(url_for("email_detail", email_id=email_id))
+
+
+@app.route("/email/<email_id>/re-enable-ai", methods=["POST"])
+def reenable_ai(email_id):
+    """Re-enable AI for a thread."""
+    email = db.get_email_by_id(email_id)
+    if email:
+        db.reenable_ai_for_thread(email["thread_id"])
+        flash("🤖 AI re-enabled for this conversation.", "success")
+    else:
+        flash("Email not found", "error")
+    return redirect(url_for("email_detail", email_id=email_id))
+
+
 @app.route("/scan")
 def scan_inbox():
     count = scheduler.process_new_emails()

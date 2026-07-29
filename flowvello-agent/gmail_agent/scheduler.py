@@ -36,6 +36,13 @@ class EmailScheduler:
             if self.db.email_exists(email.id):
                 continue
             
+            # Skip if thread is under human control
+            if self.db.is_thread_human_handled(email.thread_id):
+                print(f"   ⏭️ Skipped (human handling thread): {email.subject[:60]}")
+                self.db.save_email(email)
+                self.db.mark_processed(email.id)
+                continue
+            
             print(f"\n📬 Processing: {email.subject[:60]}...")
             
             # 1. Store raw email
