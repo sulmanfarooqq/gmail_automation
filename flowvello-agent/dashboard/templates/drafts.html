@@ -1,36 +1,43 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="p-6">
-    <h2 class="text-2xl font-bold mb-6">AI Drafts</h2>
+<div class="page-header">
+  <h1 class="page-title">✏️ AI Drafts</h1>
+  <span style="font-size:0.85rem; color:var(--text-muted);">{{ drafts|length }} pending</span>
+</div>
 
-    <div class="bg-white rounded-xl shadow-sm border">
-        {% if drafts %}
-        {% for d in drafts %}
-        <div class="border-b last:border-0 p-4">
-            <div class="flex justify-between items-start">
-                <div>
-                    <span class="font-medium">{{ d.from_name or d.from_address }}</span>
-                    <span class="text-xs text-gray-400 ml-2">{{ d.created_at[:16].replace('T', ' ') }}</span>
-                </div>
-                <span class="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">Pending</span>
-            </div>
-            <p class="text-sm mt-1">{{ d.subject }}</p>
-            <div class="mt-2 bg-gray-50 p-3 rounded text-sm whitespace-pre-wrap">{{ d.body[:400] }}</div>
-            {% if d.body|length > 400 %}<p class="text-xs text-gray-400 mt-1">...</p>{% endif %}
-            <div class="flex gap-2 mt-3">
-                <form method="POST" action="/draft/{{ d.id }}/approve" class="inline">
-                    <button class="px-3 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-700">✅ Approve & Send</button>
-                </form>
-                <form method="POST" action="/draft/{{ d.id }}/reject" class="inline">
-                    <button class="px-3 py-1.5 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200">❌ Reject</button>
-                </form>
-                <a href="/email/{{ d.email_id }}" class="px-3 py-1.5 bg-gray-200 rounded text-sm hover:bg-gray-300">View Email</a>
-            </div>
-        </div>
-        {% endfor %}
-        {% else %}
-        <p class="text-gray-400 text-center py-8">No pending drafts. All caught up! 🎉</p>
-        {% endif %}
+<div class="card">
+  {% if drafts %}
+  {% for d in drafts %}
+  <div class="email-row" style="cursor:default;">
+    <div style="display:flex; justify-content:space-between; align-items:start;">
+      <div>
+        <span class="email-sender">{{ d.from_name or d.from_address }}</span>
+        <span class="email-meta" style="margin-left:0.75rem;">{{ d.created_at[:16].replace('T', ' ') }}</span>
+      </div>
+      <span class="badge badge-pending">⏳ Pending</span>
     </div>
+    <div class="email-subject" style="margin:0.25rem 0;">{{ d.subject }}</div>
+    <div style="margin:0.75rem 0; padding:0.75rem; background:#f8fafc; border-radius:8px; font-size:0.825rem; line-height:1.6; white-space:pre-wrap; max-height:120px; overflow-y:auto;">
+      {{ d.body[:500] }}{% if d.body|length > 500 %}...{% endif %}
+    </div>
+    <div style="display:flex; gap:0.5rem;">
+      <form method="POST" action="/draft/{{ d.id }}/approve" style="display:inline;">
+        <button class="btn btn-success btn-sm">✅ Approve & Send</button>
+      </form>
+      <form method="POST" action="/draft/{{ d.id }}/reject" style="display:inline;">
+        <button class="btn btn-danger btn-sm">❌ Reject</button>
+      </form>
+      <a href="/email/{{ d.email_id }}" class="btn btn-ghost btn-sm">View Original Email</a>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty-state">
+    <div style="font-size:3rem;">🎉</div>
+    <p>No pending drafts!</p>
+    <p style="font-size:0.85rem;">All AI drafts have been reviewed. You're all caught up.</p>
+    <a href="/scan" class="btn btn-primary" style="margin-top:1rem;">Check for New Emails</a>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

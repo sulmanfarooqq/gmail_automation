@@ -1,70 +1,101 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">Email Detail</h2>
-        <a href="/inbox" class="text-blue-600 text-sm">← Back to Inbox</a>
-    </div>
+<div class="page-header">
+  <h1 class="page-title">Email Detail</h1>
+  <a href="/inbox" class="btn btn-ghost btn-sm">← Back to Inbox</a>
+</div>
 
-    <div class="grid grid-cols-3 gap-6">
-        <!-- Email Content -->
-        <div class="col-span-2">
-            <div class="bg-white rounded-xl p-6 shadow-sm border">
-                <h3 class="text-xl font-semibold mb-2">{{ email.subject }}</h3>
-                <div class="text-sm text-gray-500 mb-4">
-                    <p><strong>From:</strong> {{ email.from_name }} &lt;{{ email.from_address }}&gt;</p>
-                    <p><strong>Date:</strong> {{ email.received_at[:19].replace('T', ' ') }}</p>
-                </div>
-                <div class="border-t pt-4 mt-2 whitespace-pre-wrap text-sm leading-relaxed">{{ email.body_text[:3000] }}</div>
-            </div>
+<div style="display:grid; grid-template-columns:2fr 1fr; gap:1.5rem;">
+  <!-- Email Content -->
+  <div class="card">
+    <div class="card-header" style="flex-direction:column; align-items:start; gap:0.25rem;">
+      <div style="font-size:1.1rem; font-weight:700;">{{ email.subject }}</div>
+      <div style="font-size:0.8rem; color:var(--text-muted);">
+        <strong>From:</strong> {{ email.from_name }} &lt;{{ email.from_address }}&gt;
+        &nbsp;·&nbsp;
+        <strong>Date:</strong> {{ email.received_at[:19].replace('T', ' ') }}
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="email-body">{{ email.body_text[:5000] }}</div>
+    </div>
+  </div>
+
+  <!-- AI Panel -->
+  <div style="display:flex; flex-direction:column; gap:1rem;">
+    <!-- Classification -->
+    {% if email.intent %}
+    <div class="panel-section">
+      <div class="panel-header">🧠 AI Classification</div>
+      <div class="panel-body">
+        <div style="display:flex; flex-wrap:wrap; gap:0.375rem; margin-bottom:0.75rem;">
+          <span class="badge badge-{{ email.intent }}">{{ email.intent }}</span>
+          {% if email.priority %}
+          <span class="badge {% if email.priority == 'urgent' %}badge-urgent{% elif email.priority == 'high' %}badge-urgent{% else %}badge-{{ email.priority }}{% endif %}">
+            {{ email.priority }}
+          </span>
+          {% endif %}
+          {% if email.sentiment %}
+          <span class="badge" style="background:#f1f5f9; color:#475569;">{{ email.sentiment }}</span>
+          {% endif %}
         </div>
 
-        <!-- AI Panel -->
-        <div class="space-y-4">
-            <!-- Classification -->
-            {% if email.intent %}
-            <div class="bg-white rounded-xl p-4 shadow-sm border">
-                <h4 class="font-semibold text-sm mb-2">🧠 AI Classification</h4>
-                <div class="space-y-1 text-sm">
-                    <p><span class="text-gray-500">Intent:</span> 
-                        <span class="px-2 py-0.5 rounded bg-gray-100 text-xs">{{ email.intent }}</span>
-                    </p>
-                    <p><span class="text-gray-500">Priority:</span> 
-                        <span class="px-2 py-0.5 rounded {% if email.priority == 'urgent' %}bg-red-100 text-red-700{% else %}bg-gray-100{% endif %} text-xs">{{ email.priority }}</span>
-                    </p>
-                    <p><span class="text-gray-500">Sentiment:</span> {{ email.sentiment }}</p>
-                    {% if email.is_lead %}
-                    <p><span class="text-gray-500">Lead Score:</span> <span class="font-bold text-blue-700">{{ email.lead_score }}/100</span></p>
-                    <p><span class="text-gray-500">Name:</span> {{ email.extracted_name or '—' }}</p>
-                    <p><span class="text-gray-500">Company:</span> {{ email.extracted_company or '—' }}</p>
-                    <p><span class="text-gray-500">Phone:</span> {{ email.extracted_phone or '—' }}</p>
-                    <p><span class="text-gray-500">Service:</span> {{ email.extracted_service or '—' }}</p>
-                    {% endif %}
-                    {% if email.summary %}
-                    <p class="mt-2 text-gray-600 italic">{{ email.summary }}</p>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Draft -->
-            {% if email.draft_body %}
-            <div class="bg-white rounded-xl p-4 shadow-sm border">
-                <h4 class="font-semibold text-sm mb-2">✏️ AI Draft</h4>
-                <div class="text-sm bg-gray-50 p-3 rounded mb-3 whitespace-pre-wrap">{{ email.draft_body[:500] }}</div>
-                <div class="flex gap-2">
-                    <form method="POST" action="/draft/{{ email.draft_id }}/approve">
-                        <button class="px-3 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-700">✅ Approve & Send</button>
-                    </form>
-                    <a href="/draft/{{ email.draft_id }}/edit" class="px-3 py-1.5 bg-gray-200 rounded text-sm hover:bg-gray-300">✏️ Edit</a>
-                    <form method="POST" action="/draft/{{ email.draft_id }}/reject">
-                        <button class="px-3 py-1.5 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200">Reject</button>
-                    </form>
-                </div>
-                <p class="text-xs text-gray-400 mt-2">Status: <strong>{{ email.draft_status }}</strong></p>
-            </div>
-            {% endif %}
+        {% if email.is_lead %}
+        <div style="background:var(--accent-light); border-radius:8px; padding:0.75rem; margin-bottom:0.75rem;">
+          <div style="font-weight:700; color:var(--accent-dark); margin-bottom:0.375rem;">🔥 Lead Detected</div>
+          <div style="font-size:0.8rem; display:grid; grid-template-columns:auto 1fr; gap:0.25rem 0.75rem;">
+            {% if email.extracted_name %}<span style="color:var(--text-muted);">Name:</span><span style="font-weight:500;">{{ email.extracted_name }}</span>{% endif %}
+            {% if email.extracted_phone %}<span style="color:var(--text-muted);">Phone:</span><span style="font-weight:500;">{{ email.extracted_phone }}</span>{% endif %}
+            {% if email.extracted_company %}<span style="color:var(--text-muted);">Company:</span><span style="font-weight:500;">{{ email.extracted_company }}</span>{% endif %}
+            {% if email.extracted_service %}<span style="color:var(--text-muted);">Service:</span><span style="font-weight:500;">{{ email.extracted_service }}</span>{% endif %}
+            <span style="color:var(--text-muted);">Score:</span>
+            <span style="display:flex;align-items:center;gap:0.5rem;">
+              <div class="score-bar"><div class="score-fill" style="width:{{ email.lead_score }}%;background:var(--accent);"></div></div>
+              <span style="font-weight:700;">{{ email.lead_score }}</span>
+            </span>
+          </div>
         </div>
+        {% endif %}
+
+        {% if email.summary %}
+        <div style="font-style:italic; color:var(--text-secondary); font-size:0.85rem; padding-top:0.5rem; border-top:1px solid var(--border);">
+          {{ email.summary }}
+        </div>
+        {% endif %}
+      </div>
     </div>
+    {% endif %}
+
+    <!-- Draft -->
+    {% if email.draft_body %}
+    <div class="panel-section">
+      <div class="panel-header">
+        ✏️ AI Draft
+        <span class="badge badge-{{ email.draft_status }}" style="margin-left:auto;">
+          {% if email.draft_status == 'pending' %}⏳ Pending{% elif email.draft_status == 'sent' %}✅ Sent{% else %}❌ Rejected{% endif %}
+        </span>
+      </div>
+      <div class="panel-body">
+        <div style="background:#f8fafc; border-radius:8px; padding:0.75rem; font-size:0.85rem; line-height:1.6; white-space:pre-wrap; max-height:250px; overflow-y:auto; margin-bottom:0.75rem;">
+          {{ email.draft_body[:1000] }}{% if email.draft_body|length > 1000 %}...{% endif %}
+        </div>
+        {% if email.draft_status == 'pending' %}
+        <div style="display:flex; gap:0.5rem;">
+          <form method="POST" action="/draft/{{ email.draft_id }}/approve" style="display:inline;">
+            <button class="btn btn-success btn-sm">✅ Approve & Send</button>
+          </form>
+          <form method="POST" action="/draft/{{ email.draft_id }}/reject" style="display:inline;">
+            <button class="btn btn-danger btn-sm">❌ Reject</button>
+          </form>
+        </div>
+        {% elif email.draft_status == 'sent' %}
+        <div style="padding:0.5rem; background:#d1fae5; border-radius:8px; font-size:0.85rem; color:#065f46; text-align:center; font-weight:500;">
+          ✅ Sent successfully
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}

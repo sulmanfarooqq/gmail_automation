@@ -1,61 +1,77 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="p-6">
-    <h2 class="text-2xl font-bold mb-6">📈 Analytics</h2>
+<div class="page-header">
+  <h1 class="page-title">📈 Analytics</h1>
+</div>
 
-    <div class="grid grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-xl p-4 shadow-sm border">
-            <p class="text-sm text-gray-500">Total Emails</p>
-            <p class="text-3xl font-bold">{{ totals.total_emails or 0 }}</p>
-        </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm border">
-            <p class="text-sm text-gray-500">Total Leads</p>
-            <p class="text-3xl font-bold">{{ totals.total_leads or 0 }}</p>
-        </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm border">
-            <p class="text-sm text-gray-500">Drafts Generated</p>
-            <p class="text-3xl font-bold">{{ totals.total_drafts or 0 }}</p>
-        </div>
-        <div class="bg-white rounded-xl p-4 shadow-sm border">
-            <p class="text-sm text-gray-500">Replies Sent</p>
-            <p class="text-3xl font-bold">{{ totals.sent_count or 0 }}</p>
-        </div>
-    </div>
+<div class="grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-bottom:2rem;">
+  <div class="stat-card">
+    <div class="stat-label">Total Emails</div>
+    <div class="stat-value" style="color:var(--text-primary);">{{ totals.total_emails or 0 }}</div>
+    <div class="stat-sub">Processed</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Leads</div>
+    <div class="stat-value" style="color:var(--accent);">{{ totals.total_leads or 0 }}</div>
+    <div class="stat-sub">Captured</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Drafts</div>
+    <div class="stat-value" style="color:var(--warning);">{{ totals.total_drafts or 0 }}</div>
+    <div class="stat-sub">Generated</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Replies Sent</div>
+    <div class="stat-value" style="color:var(--success);">{{ totals.sent_count or 0 }}</div>
+    <div class="stat-sub">Approved & sent</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Active Follow-ups</div>
+    <div class="stat-value" style="color:var(--accent);">{{ totals.active_followups or 0 }}</div>
+    <div class="stat-sub">Sequences running</div>
+  </div>
+</div>
 
-    <div class="bg-white rounded-xl p-4 shadow-sm border">
-        <h3 class="font-semibold mb-3">Daily Activity</h3>
-        {% if daily %}
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-left border-b">
-                        <th class="p-2">Date</th>
-                        <th class="p-2">Emails</th>
-                        <th class="p-2">Leads</th>
-                        <th class="p-2">Drafts</th>
-                        <th class="p-2">Sent</th>
-                        <th class="p-2">Follow-ups</th>
-                        <th class="p-2">Hours Saved</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for d in daily %}
-                    <tr class="border-b">
-                        <td class="p-2">{{ d.date }}</td>
-                        <td class="p-2">{{ d.emails_processed or 0 }}</td>
-                        <td class="p-2">{{ d.leads_captured or 0 }}</td>
-                        <td class="p-2">{{ d.drafts_generated or 0 }}</td>
-                        <td class="p-2">{{ d.drafts_approved or 0 }}</td>
-                        <td class="p-2">{{ d.followups_sent or 0 }}</td>
-                        <td class="p-2">{{ "%.1f"|format(d.hours_saved or 0) }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p class="text-gray-400 text-center py-4">No data yet. Process some emails first.</p>
-        {% endif %}
-    </div>
+<div class="card">
+  <div class="card-header">
+    <span>📅 Daily Activity (Last 30 Days)</span>
+  </div>
+  {% if daily %}
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Emails</th>
+          <th>Leads</th>
+          <th>Drafts</th>
+          <th>Sent</th>
+          <th>Follow-ups</th>
+          <th>Hours Saved</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in daily %}
+        <tr>
+          <td style="font-weight:600;">{{ d.date }}</td>
+          <td>{{ d.emails_processed or 0 }}</td>
+          <td>{% if d.leads_captured %}<span style="color:var(--accent);font-weight:600;">{{ d.leads_captured }}</span>{% else %}0{% endif %}</td>
+          <td>{{ d.drafts_generated or 0 }}</td>
+          <td>{% if d.drafts_approved %}<span style="color:var(--success);font-weight:600;">{{ d.drafts_approved }}</span>{% else %}0{% endif %}</td>
+          <td>{{ d.followups_sent or 0 }}</td>
+          <td>{{ "%.1f"|format(d.hours_saved or 0) }}h</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div style="font-size:3rem;">📊</div>
+    <p>No data yet.</p>
+    <p style="font-size:0.85rem;">Analytics will populate once you start processing emails.</p>
+    <a href="/scan" class="btn btn-primary" style="margin-top:1rem;">Process Your First Email</a>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

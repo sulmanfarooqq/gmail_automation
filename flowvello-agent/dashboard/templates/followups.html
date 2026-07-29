@@ -1,29 +1,38 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="p-6">
-    <h2 class="text-2xl font-bold mb-6">⏰ Follow-ups</h2>
+<div class="page-header">
+  <h1 class="page-title">⏰ Follow-ups</h1>
+  <span style="font-size:0.85rem; color:var(--text-muted);">{{ followups|length }} active</span>
+</div>
 
-    <div class="bg-white rounded-xl shadow-sm border">
-        {% if followups %}
-        {% for f in followups %}
-        <div class="border-b last:border-0 p-4">
-            <div class="flex justify-between">
-                <div>
-                    <span class="font-medium">{{ f.contact_name or f.contact_email }}</span>
-                    <span class="text-xs text-gray-400 ml-2">{{ f.subject[:60] }}</span>
-                </div>
-                <span class="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700">{{ f.status }}</span>
-            </div>
-            <div class="text-sm text-gray-500 mt-1">
-                Step {{ f.step }}/{{ f.max_steps }} | 
-                {% if f.last_sent_at %}Last sent: {{ f.last_sent_at[:10] }}{% endif %}
-                {% if f.next_scheduled_at %} | Next: {{ f.next_scheduled_at[:10] }}{% endif %}
-            </div>
-        </div>
-        {% endfor %}
-        {% else %}
-        <p class="text-gray-400 text-center py-8">No active follow-ups.</p>
-        {% endif %}
+<div class="card">
+  {% if followups %}
+  {% for f in followups %}
+  <div class="email-row" style="cursor:default;">
+    <div style="display:flex; justify-content:space-between;">
+      <div>
+        <span class="email-sender">{{ f.contact_name or f.contact_email }}</span>
+        <span style="font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">{{ f.subject[:60] }}</span>
+      </div>
+      <span class="badge badge-running">{{ f.status }}</span>
     </div>
+    <div style="margin-top:0.375rem; display:flex; align-items:center; gap:1rem; font-size:0.8rem; color:var(--text-secondary);">
+      <span>Step <strong>{{ f.step }}</strong> / {{ f.max_steps }}</span>
+      {% if f.last_sent_at %}
+      <span>Last sent: <strong>{{ f.last_sent_at[:10] }}</strong></span>
+      {% endif %}
+      {% if f.next_scheduled_at %}
+      <span>Next: <strong>{{ f.next_scheduled_at[:10] }}</strong></span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty-state">
+    <div style="font-size:3rem;">📬</div>
+    <p>No active follow-ups.</p>
+    <p style="font-size:0.85rem;">Follow-ups start automatically when AI detects a lead or unanswered email.</p>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
