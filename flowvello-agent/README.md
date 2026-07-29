@@ -21,11 +21,8 @@
 
 - [What It Does](#-what-it-does)
 - [Full Feature List](#-full-feature-list)
-- [UML Diagrams — System Workflow](#-uml-diagrams--system-workflow)
-  - [Full Email Processing Workflow](#1-full-email-processing-workflow)
-  - [AI Pipeline — Sequence Diagram](#2-ai-pipeline--sequence-diagram)
-  - [Human Handoff Flow](#3-human-handoff-flow)
-  - [Use Case Diagram — All Agent Functionalities](#4-use-case-diagram--all-agent-functionalities)
+- [UML Diagrams — System Workflow](#-complete-system-diagram--full-agent-workflow)
+  - [Complete System Diagram](#-complete-system-diagram--full-agent-workflow)
 - [Human Handoff](#-human-handoff)
 - [Quick Start](#-quick-start)
 - [Modes](#-modes)
@@ -98,245 +95,88 @@ FlowVello Gmail AI Agent connects to your agency's Gmail inbox and becomes your 
 
 ---
 
-## 📐 UML Diagrams — System Workflow
-
-### 1. Full Email Processing Workflow
+## 📐 Complete System Diagram — Full Agent Workflow
 
 ```mermaid
 flowchart TD
-    START([Email arrives in Gmail Inbox]) --> CHECK{Already processed?}
-    CHECK -->|Yes| SKIP[Skip email]
-    CHECK -->|No| HANDLED{Thread human-handled?}
-    HANDLED -->|Yes| SKIP_H[Mark processed, skip AI]
-    HANDLED -->|No| STORE[1. Store raw email in SQLite]
-    STORE --> CLASSIFY[2. Gemini AI Classifies]
+    START([📬 Email arrives in Gmail]) --> CHECK{Already processed?}
+    CHECK -->|Yes| DONE([End])
+    CHECK -->|No| HANDOFF_CHECK{Thread under<br/>human control?}
+    HANDOFF_CHECK -->|Yes| SKIP_AI[⏭️ Mark processed<br/>Skip AI entirely]
+    HANDOFF_CHECK -->|No| STORE[💾 Store raw email<br/>in SQLite]
     
-    CLASSIFY --> CLASSIFY_RESULT{Intent?}
-    
-    CLASSIFY_RESULT -->|lead| LEAD_FLOW
-    CLASSIFY_RESULT -->|client_support| SUPPORT_FLOW
-    CLASSIFY_RESULT -->|billing| BILLING_FLOW
-    CLASSIFY_RESULT -->|meeting_request| MEETING_FLOW
-    CLASSIFY_RESULT -->|complaint| COMPLAINT_FLOW
-    CLASSIFY_RESULT -->|partnership| PARTNER_FLOW
-    CLASSIFY_RESULT -->|spam| SPAM[Mark as spam - skip]
-    CLASSIFY_RESULT -->|other| DRAFT_FLOW
-    
+    SKIP_AI --> DONE
+    STORE --> CLASSIFY[🧠 Gemini AI classifies intent]
+
+    CLASSIFY -->|lead 🔥| LEAD_FLOW
+    CLASSIFY -->|client_support 🛠️| SUPPORT_FLOW
+    CLASSIFY -->|billing 💰| BILLING_FLOW  
+    CLASSIFY -->|meeting_request 📅| MEETING_FLOW
+    CLASSIFY -->|complaint ⚠️| COMPLAINT_FLOW
+    CLASSIFY -->|partnership 🤝| PARTNER_FLOW
+    CLASSIFY -->|spam 🚫| SPAM[Mark spam - discarded]
+    CLASSIFY -->|other 📨| DRAFT_FLOW
+
     subgraph LEAD_FLOW [Lead Detection]
-        LEAD[Extract: name, phone, company, service] --> LEAD_SAVE[Save lead to database]
-        LEAD_SAVE --> LEAD_NOTIFY[Notify user]
+        LEAD_EXTRACT[Extract: name, phone,<br/>company, service interest] --> LEAD_SCORE[Score lead 0-100]
+        LEAD_SCORE --> LEAD_SAVE[💾 Save to Leads table]
+        LEAD_SAVE --> LEAD_NOTIFY[🔔 Notify user]
         LEAD_NOTIFY --> DRAFT_FLOW
     end
-    
+
     subgraph DRAFT_FLOW [Draft Generation]
-        DRAFT[3. Gemini generates reply] --> DRAFT_CHECK{Needs approval?}
-        DRAFT_CHECK -->|Yes| PENDING[Mark as pending - show in AI Drafts]
-        DRAFT_CHECK -->|No| AUTO_APPROVE{Is FAQ / auto-replyable?}
-        AUTO_APPROVE -->|Yes| SEND_FLOW
-        AUTO_APPROVE -->|No| PENDING
+        DRAFT[✏️ Gemini generates<br/>context-aware reply] --> PENDING[⏳ Mark as pending<br/>Show in AI Drafts]
     end
-    
-    subgraph APPROVAL_FLOW [Human Review]
-        PENDING --> HUMAN_VIEW[User views draft]
-        HUMAN_VIEW --> ACTION{Action}
-        ACTION -->|Approve| SEND_FLOW
-        ACTION -->|Edit| EDIT[User edits] --> SEND_FLOW
-        ACTION -->|Reject| REJECTED[Mark rejected]
-        ACTION -->|Take Over| HANDOFF[Human takes over]
-    end
-    
-    subgraph SEND_FLOW [Send & Follow-up]
-        SEND[4. Send via Gmail API] --> SENT[Mark as sent]
-        SENT --> FOLLOWUP{Is lead or inquiry?}
-        FOLLOWUP -->|Yes| SCHEDULE[5. Schedule follow-up sequence]
-        FOLLOWUP -->|No| DONE
-        SCHEDULE --> DAY3[Day 3: Follow-up #1]
-        DAY3 --> REPLY1{Contact replied?}
-        REPLY1 -->|Yes| STOP[Stop sequence]
-        REPLY1 -->|No| DAY7[Day 7: Follow-up #2]
-        DAY7 --> REPLY2{Contact replied?}
-        REPLY2 -->|Yes| STOP
-        REPLY2 -->|No| DAY14[Day 14: Final follow-up]
-        DAY14 --> COMPLETE[Mark sequence complete]
-    end
-    
-    subgraph HANDOFF [Human Handoff]
-        HANDOFF_TAKEN[AI stops for this thread] --> FO_STOP[Follow-ups stopped]
-        FO_STOP --> MANUAL[User replies manually]
-        MANUAL --> REENABLE{User can re-enable AI}
-        REENABLE -->|Yes| AI_BACK[AI resumes for thread]
-        REENABLE -->|No| STAY_MANUAL[Stays manual]
-    end
-    
-    SKIP --> DONE([End])
-    SKIP_H --> DONE
+
     SPAM --> DONE
+    SUPPORT_FLOW --> DRAFT_FLOW
+    BILLING_FLOW --> DRAFT_FLOW
+    MEETING_FLOW --> DRAFT_FLOW
+    COMPLAINT_FLOW --> DRAFT_FLOW
+    PARTNER_FLOW --> DRAFT_FLOW
+
+    PENDING --> HUMAN_VIEW[👤 User opens email<br/>in dashboard]
+
+    HUMAN_VIEW --> ACTION{User action}
+    ACTION -->|✅ Approve| SEND_FLOW
+    ACTION -->|✏️ Edit| EDIT[User edits draft] --> SEND_FLOW
+    ACTION -->|❌ Reject| REJECTED[🗑️ Draft rejected]
+    ACTION -->|👤 Take Over| TAKEOVER[HUMAN HANDOFF]
+
     REJECTED --> DONE
+
+    subgraph SEND_FLOW [Send & Follow-up]
+        SEND[📤 Send via Gmail API<br/>with threading headers] --> SENT[✅ Mark as sent]
+        SENT --> DECIDE{Is lead or<br/>inquiry?}
+        DECIDE -->|Yes| SCHEDULE[📅 Schedule 3-step<br/>follow-up sequence]
+        DECIDE -->|No| DONE
+        SCHEDULE --> DAY3[Day 3: Follow-up #1<br/>'Checking in']
+        DAY3 --> R1{Contact<br/>replied?}
+        R1 -->|Yes| STOP[⏹️ Stop sequence]
+        R1 -->|No| DAY7[Day 7: Follow-up #2<br/>'Still interested?']
+        DAY7 --> R2{Contact<br/>replied?}
+        R2 -->|Yes| STOP
+        R2 -->|No| DAY14[Day 14: Final follow-up<br/>'Last try']
+        DAY14 --> R3{Contact<br/>replied?}
+        R3 -->|Yes| STOP
+        R3 -->|No| COMPLETE[✅ Sequence complete]
+    end
+
     STOP --> DONE
     COMPLETE --> DONE
-    SEND_FLOW --> FOLLOWUP
-```
 
-### 2. AI Pipeline — Sequence Diagram
+    subgraph TAKEOVER [Human Handoff Cycle]
+        HANDOFF_MARK[✋ Mark thread<br/>human_handled = 1] --> FO_STOP[⏹️ Stop all follow-ups<br/>for this thread]
+        FO_STOP --> MANUAL[💬 User replies manually]
+        MANUAL --> REENABLE{User clicks<br/>Re-enable AI?}
+        REENABLE -->|Yes| AI_BACK[🤖 AI resumes for<br/>this thread]
+        REENABLE -->|No| MANUAL
+    end
 
-```mermaid
-sequenceDiagram
-    participant G as Gmail Inbox
-    participant A as Gmail API
-    participant S as Scheduler
-    participant D as Database (SQLite)
-    participant AI as Gemini AI
-    participant U as User (Dashboard)
+    TAKEOVER --> HANDOFF_MARK
+    AI_BACK --> HANDOFF_CHECK
 
-    Note over G,U: === EMAIL ARRIVES ===
-    G->>A: New email received
-    S->>A: Poll for unread emails
-    A->>S: Return email data
-    
-    Note over S,AI: === CLASSIFICATION ===
-    S->>D: Save raw email
-    S->>AI: Send email body + subject
-    AI->>S: Return classification JSON
-    S->>D: Store classification
-    
-    alt is lead
-        S->>D: Create lead record
-        S->>U: Notify: new lead detected
-    end
-    
-    Note over S,AI: === DRAFT GENERATION ===
-    S->>AI: Send email + classification + KB context
-    AI->>S: Return draft reply JSON
-    S->>D: Store draft (pending)
-    
-    Note over U: === HUMAN REVIEW ===
-    U->>D: View email + AI draft
-    U->>U: Review / Edit / Approve / Reject
-    
-    alt approved
-        U->>S: Approve draft
-        S->>A: Send email via Gmail API
-        A->>S: Confirm sent
-        S->>D: Mark draft as sent
-        S->>D: Schedule follow-up sequence
-    else rejected
-        U->>S: Reject draft
-        S->>D: Mark draft as rejected
-    else take over
-        U->>S: Take over conversation
-        S->>D: Mark thread human_handled
-        S->>D: Stop all follow-ups for thread
-    end
-    
-    Note over S: === FOLLOW-UP (background) ===
-    S->>D: Check due follow-ups every 5 min
-    alt follow-up due
-        S->>AI: Generate follow-up text
-        S->>A: Send follow-up
-        S->>D: Update step, schedule next
-    end
-    
-    alt contact replies
-        S->>D: Stop follow-up sequence
-    end
-```
-
-### 3. Human Handoff Flow
-
-```mermaid
-stateDiagram-v2
-    [*] --> AI_ACTIVE: Email received
-    
-    state AI_ACTIVE {
-        [*] --> Classifying
-        Classifying --> Drafting
-        Drafting --> Awaiting_Approval
-        Awaiting_Approval --> Sending : Approve
-        Awaiting_Approval --> FollowUps
-        FollowUps --> Complete
-    }
-    
-    AI_ACTIVE --> HUMAN_CONTROL: User clicks "Take Over"
-    
-    state HUMAN_CONTROL {
-        [*] --> AI_Paused
-        AI_Paused --> Manual_Replies
-        Manual_Replies --> AI_Paused : New emails in thread
-        AI_Paused --> Re_enable_AI : User clicks "Re-enable AI"
-        Re_enable_AI --> [*]
-    }
-    
-    HUMAN_CONTROL --> AI_ACTIVE: AI re-enabled
-    
-    AI_ACTIVE --> COMPLETED: Thread resolved
-    HUMAN_CONTROL --> COMPLETED: Thread resolved
-    COMPLETED --> [*]
-```
-
-### 4. Use Case Diagram — All Agent Functionalities
-
-```mermaid
-flowchart LR
-    USER([Human User])
-    
-    subgraph FEATURES [System Capabilities]
-        direction TB
-        F1[📬 Monitor Inbox]
-        F2[🧠 Classify Emails]
-        F3[🔥 Detect Leads]
-        F4[✏️ Generate Drafts]
-        F5[✅ Approve / Reject]
-        F6[📤 Send Replies]
-        F7[👤 Take Over Conversation]
-        F8[🤖 Re-enable AI]
-        F9[🔄 Auto Follow-ups]
-        F10[📊 View Analytics]
-        F11[📋 Daily Summary]
-        F12[🔐 Rate Limit Sending]
-        F13[🏷️ Filter Inbox]
-        F14[⏹️ Stop Follow-ups]
-    end
-    
-    USER --- F1
-    USER --- F2
-    USER --- F3
-    USER --- F4
-    USER --- F5
-    USER --- F6
-    USER --- F7
-    USER --- F8
-    USER --- F9
-    USER --- F10
-    USER --- F11
-    USER --- F12
-    USER --- F13
-    USER --- F14
-    
-    subgraph AI [AI Performs]
-        AI1[Classify Intent]
-        AI2[Extract Lead Data]
-        AI3[Generate Draft]
-        AI4[Generate Follow-up]
-        AI5[Summarize Thread]
-    end
-    
-    subgraph TRIGGERS [Automated Triggers]
-        T1[New email arrives]
-        T2[No reply in 3 days]
-        T3[Contact replies]
-        T4[Daily at 8 AM]
-        T5[Human takes over]
-    end
-    
-    AI1 --> F2
-    AI2 --> F3
-    AI3 --> F4
-    AI4 --> F9
-    T1 --> F1
-    T2 --> F9
-    T3 --> F14
-    T4 --> F11
-    T5 --> F7
+    SEND --> SEND_FLOW
 ```
 
 ---
