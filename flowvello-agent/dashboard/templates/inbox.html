@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Inbox</h2>
+        <a href="/scan" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">🔄 Scan Now</a>
+    </div>
+    
+    <!-- Filters -->
+    <div class="flex gap-2 mb-4">
+        <a href="/inbox" class="px-3 py-1.5 rounded-lg text-sm {% if not filter %}bg-blue-600 text-white{% else %}bg-gray-200{% endif %}">All</a>
+        <a href="/inbox?filter=lead" class="px-3 py-1.5 rounded-lg text-sm {% if filter == 'lead' %}bg-blue-600 text-white{% else %}bg-gray-200{% endif %}">Leads</a>
+        <a href="/inbox?filter=urgent" class="px-3 py-1.5 rounded-lg text-sm {% if filter == 'urgent' %}bg-blue-600 text-white{% else %}bg-gray-200{% endif %}">Urgent</a>
+        <a href="/inbox?filter=support" class="px-3 py-1.5 rounded-lg text-sm {% if filter == 'support' %}bg-blue-600 text-white{% else %}bg-gray-200{% endif %}">Support</a>
+        <a href="/inbox?filter=unprocessed" class="px-3 py-1.5 rounded-lg text-sm {% if filter == 'unprocessed' %}bg-blue-600 text-white{% else %}bg-gray-200{% endif %}">Unprocessed</a>
+    </div>
+
+    <!-- Email List -->
+    <div class="bg-white rounded-xl shadow-sm border">
+        {% if emails %}
+        {% for e in emails %}
+        <a href="/email/{{ e.id }}" class="email-row block border-b last:border-0 px-4 py-3">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="font-medium">{{ e.from_name or e.from_address }}</span>
+                    {% if e.is_lead %}
+                    <span class="badge-lead text-xs px-2 py-0.5 rounded ml-2">LEAD</span>
+                    {% endif %}
+                    {% if e.priority == 'urgent' or e.priority == 'high' %}
+                    <span class="badge-urgent text-xs px-2 py-0.5 rounded ml-1">URGENT</span>
+                    {% endif %}
+                </div>
+                <span class="text-xs text-gray-400">{{ e.received_at[:16].replace('T', ' ') }}</span>
+            </div>
+            <p class="text-sm text-gray-800 mt-0.5">{{ e.subject }}</p>
+            <div class="flex gap-2 mt-1">
+                {% if e.intent %}
+                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">{{ e.intent }}</span>
+                {% endif %}
+                {% if e.draft_status == 'pending' %}
+                <span class="text-xs text-yellow-600">✏️ Draft pending</span>
+                {% elif e.draft_status == 'sent' %}
+                <span class="text-xs text-green-600">✅ Replied</span>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+        {% else %}
+        <p class="text-gray-400 text-center py-8">No emails found. Connect Gmail and scan your inbox.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

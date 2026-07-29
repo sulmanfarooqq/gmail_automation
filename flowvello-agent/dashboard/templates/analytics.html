@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-6">
+    <h2 class="text-2xl font-bold mb-6">📈 Analytics</h2>
+
+    <div class="grid grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-xl p-4 shadow-sm border">
+            <p class="text-sm text-gray-500">Total Emails</p>
+            <p class="text-3xl font-bold">{{ totals.total_emails or 0 }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 shadow-sm border">
+            <p class="text-sm text-gray-500">Total Leads</p>
+            <p class="text-3xl font-bold">{{ totals.total_leads or 0 }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 shadow-sm border">
+            <p class="text-sm text-gray-500">Drafts Generated</p>
+            <p class="text-3xl font-bold">{{ totals.total_drafts or 0 }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 shadow-sm border">
+            <p class="text-sm text-gray-500">Replies Sent</p>
+            <p class="text-3xl font-bold">{{ totals.sent_count or 0 }}</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-4 shadow-sm border">
+        <h3 class="font-semibold mb-3">Daily Activity</h3>
+        {% if daily %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-left border-b">
+                        <th class="p-2">Date</th>
+                        <th class="p-2">Emails</th>
+                        <th class="p-2">Leads</th>
+                        <th class="p-2">Drafts</th>
+                        <th class="p-2">Sent</th>
+                        <th class="p-2">Follow-ups</th>
+                        <th class="p-2">Hours Saved</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in daily %}
+                    <tr class="border-b">
+                        <td class="p-2">{{ d.date }}</td>
+                        <td class="p-2">{{ d.emails_processed or 0 }}</td>
+                        <td class="p-2">{{ d.leads_captured or 0 }}</td>
+                        <td class="p-2">{{ d.drafts_generated or 0 }}</td>
+                        <td class="p-2">{{ d.drafts_approved or 0 }}</td>
+                        <td class="p-2">{{ d.followups_sent or 0 }}</td>
+                        <td class="p-2">{{ "%.1f"|format(d.hours_saved or 0) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-400 text-center py-4">No data yet. Process some emails first.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

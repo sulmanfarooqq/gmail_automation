@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowVello Gmail Agent</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <style>
+        .sidebar-link { transition: all 0.2s; }
+        .sidebar-link:hover { background: #1e293b; }
+        .email-row:hover { background: #f8fafc; }
+        .badge-lead { background: #dbeafe; color: #1e40af; }
+        .badge-urgent { background: #fee2e2; color: #991b1b; }
+        .badge-support { background: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col">
+            <div class="p-4 border-b border-slate-700">
+                <h1 class="text-lg font-bold">FlowVello Agent</h1>
+                <p class="text-xs text-slate-400 mt-1">Gmail AI Automation</p>
+            </div>
+            <nav class="flex-1 p-2 space-y-1">
+                <a href="/" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded text-sm {% if active == 'dashboard' %}bg-slate-700{% endif %}">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="/inbox" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded text-sm {% if active == 'inbox' %}bg-slate-700{% endif %}">
+                    <span>📬</span> Inbox
+                </a>
+                <a href="/drafts" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded text-sm {% if active == 'drafts' %}bg-slate-700{% endif %}">
+                    <span>✏️</span> AI Drafts
+                    {% if pending_drafts_count > 0 %}
+                    <span class="ml-auto bg-blue-500 text-xs px-2 py-0.5 rounded-full">{{ pending_drafts_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="/leads" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded text-sm {% if active == 'leads' %}bg-slate-700{% endif %}">
+                    <span>🔥</span> Leads
+                </a>
+                <a href="/followups" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded text-sm {% if active == 'followups' %}bg-slate-700{% endif %}">
+                    <span>⏰</span> Follow-ups
+                </a>
+                <hr class="my-2 border-slate-700">
+                <a href="/analytics" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded text-sm {% if active == 'analytics' %}bg-slate-700{% endif %}">
+                    <span>📈</span> Analytics
+                </a>
+                <a href="/scan" class="sidebar-link flex items-center gap-3 px-3 py-2 rounded text-sm">
+                    <span>🔄</span> Scan Now
+                </a>
+            </nav>
+            <div class="p-4 border-t border-slate-700">
+                <div class="flex items-center gap-2 text-xs text-slate-400">
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                    {{ gmail_status }}
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-auto">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

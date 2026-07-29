@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-6">
+    <h2 class="text-2xl font-bold mb-6">Dashboard</h2>
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-5 gap-4 mb-8">
+        {% for stat in stats %}
+        <div class="bg-white rounded-xl p-4 shadow-sm border">
+            <p class="text-sm text-gray-500">{{ stat.label }}</p>
+            <p class="text-3xl font-bold mt-1">{{ stat.value }}</p>
+            <p class="text-xs text-gray-400 mt-1">{{ stat.sub }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="grid grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl p-4 shadow-sm border">
+            <h3 class="font-semibold mb-3">Recent Emails</h3>
+            {% if recent_emails %}
+            {% for e in recent_emails %}
+            <a href="/email/{{ e.id }}" class="block border-b last:border-0 py-2 hover:bg-gray-50">
+                <div class="flex justify-between">
+                    <span class="font-medium text-sm">{{ e.from_name or e.from_address }}</span>
+                    <span class="text-xs text-gray-400">{{ e.received_at[:10] }}</span>
+                </div>
+                <p class="text-sm text-gray-600 truncate">{{ e.subject }}</p>
+                <div class="flex gap-1 mt-1">
+                    {% if e.intent %}
+                    <span class="text-xs px-2 py-0.5 rounded bg-gray-100">{{ e.intent }}</span>
+                    {% endif %}
+                    {% if e.is_lead %}
+                    <span class="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700">LEAD</span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+            {% else %}
+            <p class="text-gray-400 text-sm py-4">No emails processed yet. <a href="/scan" class="text-blue-600">Scan now</a></p>
+            {% endif %}
+        </div>
+
+        <div class="bg-white rounded-xl p-4 shadow-sm border">
+            <h3 class="font-semibold mb-3">Pending Drafts</h3>
+            {% if pending_drafts %}
+            {% for d in pending_drafts %}
+            <div class="border-b last:border-0 py-2">
+                <div class="flex justify-between">
+                    <span class="font-medium text-sm">{{ d.from_name or d.from_address }}</span>
+                    <span class="text-xs text-yellow-600">⏳ Pending</span>
+                </div>
+                <p class="text-sm text-gray-600 truncate">{{ d.subject }}</p>
+                <a href="/email/{{ d.email_id }}" class="text-xs text-blue-600">Review →</a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-gray-400 text-sm py-4">No pending drafts.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+        <h3 class="font-semibold text-blue-800 mb-2">⚡ Quick Actions</h3>
+        <div class="flex gap-3">
+            <a href="/scan" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Scan Inbox Now</a>
+            <a href="/drafts" class="px-4 py-2 bg-white text-blue-700 rounded-lg text-sm border border-blue-300 hover:bg-blue-50">Review Drafts</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Email Detail</h2>
+        <a href="/inbox" class="text-blue-600 text-sm">← Back to Inbox</a>
+    </div>
+
+    <div class="grid grid-cols-3 gap-6">
+        <!-- Email Content -->
+        <div class="col-span-2">
+            <div class="bg-white rounded-xl p-6 shadow-sm border">
+                <h3 class="text-xl font-semibold mb-2">{{ email.subject }}</h3>
+                <div class="text-sm text-gray-500 mb-4">
+                    <p><strong>From:</strong> {{ email.from_name }} &lt;{{ email.from_address }}&gt;</p>
+                    <p><strong>Date:</strong> {{ email.received_at[:19].replace('T', ' ') }}</p>
+                </div>
+                <div class="border-t pt-4 mt-2 whitespace-pre-wrap text-sm leading-relaxed">{{ email.body_text[:3000] }}</div>
+            </div>
+        </div>
+
+        <!-- AI Panel -->
+        <div class="space-y-4">
+            <!-- Classification -->
+            {% if email.intent %}
+            <div class="bg-white rounded-xl p-4 shadow-sm border">
+                <h4 class="font-semibold text-sm mb-2">🧠 AI Classification</h4>
+                <div class="space-y-1 text-sm">
+                    <p><span class="text-gray-500">Intent:</span> 
+                        <span class="px-2 py-0.5 rounded bg-gray-100 text-xs">{{ email.intent }}</span>
+                    </p>
+                    <p><span class="text-gray-500">Priority:</span> 
+                        <span class="px-2 py-0.5 rounded {% if email.priority == 'urgent' %}bg-red-100 text-red-700{% else %}bg-gray-100{% endif %} text-xs">{{ email.priority }}</span>
+                    </p>
+                    <p><span class="text-gray-500">Sentiment:</span> {{ email.sentiment }}</p>
+                    {% if email.is_lead %}
+                    <p><span class="text-gray-500">Lead Score:</span> <span class="font-bold text-blue-700">{{ email.lead_score }}/100</span></p>
+                    <p><span class="text-gray-500">Name:</span> {{ email.extracted_name or '—' }}</p>
+                    <p><span class="text-gray-500">Company:</span> {{ email.extracted_company or '—' }}</p>
+                    <p><span class="text-gray-500">Phone:</span> {{ email.extracted_phone or '—' }}</p>
+                    <p><span class="text-gray-500">Service:</span> {{ email.extracted_service or '—' }}</p>
+                    {% endif %}
+                    {% if email.summary %}
+                    <p class="mt-2 text-gray-600 italic">{{ email.summary }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Draft -->
+            {% if email.draft_body %}
+            <div class="bg-white rounded-xl p-4 shadow-sm border">
+                <h4 class="font-semibold text-sm mb-2">✏️ AI Draft</h4>
+                <div class="text-sm bg-gray-50 p-3 rounded mb-3 whitespace-pre-wrap">{{ email.draft_body[:500] }}</div>
+                <div class="flex gap-2">
+                    <form method="POST" action="/draft/{{ email.draft_id }}/approve">
+                        <button class="px-3 py-1.5 bg-green-600 text-white rounded text-sm hover:bg-green-700">✅ Approve & Send</button>
+                    </form>
+                    <a href="/draft/{{ email.draft_id }}/edit" class="px-3 py-1.5 bg-gray-200 rounded text-sm hover:bg-gray-300">✏️ Edit</a>
+                    <form method="POST" action="/draft/{{ email.draft_id }}/reject">
+                        <button class="px-3 py-1.5 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200">Reject</button>
+                    </form>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">Status: <strong>{{ email.draft_status }}</strong></p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

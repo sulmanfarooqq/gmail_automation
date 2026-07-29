@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-6">
+    <h2 class="text-2xl font-bold mb-6">⏰ Follow-ups</h2>
+
+    <div class="bg-white rounded-xl shadow-sm border">
+        {% if followups %}
+        {% for f in followups %}
+        <div class="border-b last:border-0 p-4">
+            <div class="flex justify-between">
+                <div>
+                    <span class="font-medium">{{ f.contact_name or f.contact_email }}</span>
+                    <span class="text-xs text-gray-400 ml-2">{{ f.subject[:60] }}</span>
+                </div>
+                <span class="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700">{{ f.status }}</span>
+            </div>
+            <div class="text-sm text-gray-500 mt-1">
+                Step {{ f.step }}/{{ f.max_steps }} | 
+                {% if f.last_sent_at %}Last sent: {{ f.last_sent_at[:10] }}{% endif %}
+                {% if f.next_scheduled_at %} | Next: {{ f.next_scheduled_at[:10] }}{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-gray-400 text-center py-8">No active follow-ups.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
