@@ -1,1127 +1,1111 @@
-If you're building this for **your own agency first** and then selling the same system to other agencies, don't build a generic "AI Gmail automation." Build a **multi-tenant AI Email Operations Platform for agencies**.
+Yes. But build this as a **mail platform + AI automation layer**, not as a literal Gmail clone.
 
-The core idea:
+Your goal should be:
 
-> **Gmail → AI understands emails → classifies → extracts data → drafts/replies → triggers workflows → updates CRM → follows up → reports to team.**
+> **One self-hosted, multi-tenant business email platform that gives any company its own professional mailbox and automatically handles routine email work.**
 
-You build the core once, then customize **prompts, workflows, integrations, and branding** per agency.
+For example:
 
-## 1. The product you should build
+`contact@flowvello.com`
+`sales@flowvello.com`
+`support@flowvello.com`
 
-![Image](https://images.openai.com/static-rsc-4/1FZ2yMSBPojJY1bGZPcctdYwzcrWOuvQDioPZ_rrFUcR85aiXuLwYFlIz0PpCMxMyv9YVMUqJBfgy6AwopUqZ04kRA3klczrYOviDbN7MCTK3I3lnQEkl3TE5Ic4hyg_sEC_UtpnQcSiViifhvKjPHSzOUy-FvuUME54fbQxCn2oGviOl8wqSUJfVjkkpnBn?purpose=fullsize)
+and later:
 
-![Image](https://images.openai.com/static-rsc-4/WufHgRTv3Jk1WP4ZYG-TOOArN16wxwQAFlldQtaGRjl4fbERSYzVCQHj-rH7esrx-43nKyDz25-5qmvp9jloR491zPsXVB9kJJKC6gH1CGCeW8EhhaCI17QGWCYZO2tV8an_yh8wfznz6ek9vo1REEaSIVrMH3sfhfFW4VHjyKSULW_aZhMBcf8tB6Vg4JWo?purpose=fullsize)
+`info@dentist.com`
+`sales@realestate.com`
+`support@ecommerce.com`
 
-![Image](https://images.openai.com/static-rsc-4/CNHMO2F2MJkLTlgT0EBZQxT-ZnXS5F_tmOlpzOIb9Eubd9QEufkga6E2d-44WggxEP5tnEY74jPUBPQVfkdcNeZxnn5pLdQxyiQa8bGhDI8u4yRgmf0IAXfMNb3BUMIzhD_svkK2vqiBAYZ1sMIEJEqxNmzeXr8OgdBSDSiVq4-SOzyE1fHyXcGKTbxJfrWD?purpose=fullsize)
-
-![Image](https://images.openai.com/static-rsc-4/0YNJS-tWhOW1RIlx_rmlIXpqLvgi3Lw9gvB9lGuMKTDwB1oZD9-43PY_CMRecGRysu09GZMssEPiDJZFBqoJgkq6M9doCDEP2uXes5XlIyA3eC3MVqCOPprOwaeP-NSldBl8uSVeI-CC5QAINxA-b4fIvtO2M9tU4kWfczjZsR_-IJtsCL-aaCOanXB4_-K_?purpose=fullsize)
-
-![Image](https://images.openai.com/static-rsc-4/Cpbr3yGWBFQNODKj-_Zs60FlMmSPZUlOmqd60Ykl0WUPlhCLTySk-4CXMunBJal9YAyUXLSIAtZJrDXlpjgEh4YLl_LnrvANFNkYBekL7p2yrZEwc3eK4-fHV1GUjjkrNvg5icCEOXrNOFwSKslAd7aUhFRPvPkWwQ1C3wP9STDJHFYjT5jp1hj-6Lpk-mlW?purpose=fullsize)
-
-![Image](https://images.openai.com/static-rsc-4/E-pU4KD9qBVasXSIB9XKw8LFJJbucJe03kUmnUbgRTBHBryNv8LecxTjv8J5oUwSHz4Tm1KjxcxCFRbVIOEPaK5X33n7pMOJruO2eDns317g_ZWBIhU0r7Mygre4xvByAPYWVn7NoUHVX5fCTCsGgl4INklOX7laCthhPy3jTOcoT5FaShLGo26noWgURjJp?purpose=fullsize)
-
-Think of the product as:
-
-### **AI Agency Email Operating System**
-
-It should handle:
-
-1. **Email receiving**
-2. **AI email understanding**
-3. **Lead detection**
-4. **Customer support**
-5. **Email classification**
-6. **AI reply generation**
-7. **Human approval**
-8. **Automatic replies**
-9. **Follow-up sequences**
-10. **Lead qualification**
-11. **Appointment booking**
-12. **CRM synchronization**
-13. **Task creation**
-14. **Internal notifications**
-15. **Email summarization**
-16. **Document/invoice extraction**
-17. **Analytics**
-18. **Multi-user/team management**
-
-The important point: **Gmail is only the communication channel.**
-
-Your actual product is the **AI workflow engine behind Gmail**.
+The underlying platform stays the same.
 
 ---
 
-# 2. The architecture
+# 1. The final product
 
-I would build it like this:
+Call it something like:
+
+**AI Business Mailbox**
+
+It has two layers.
+
+### Layer A — Your own email infrastructure
 
 ```text
-                    ┌──────────────────────┐
-                    │       Gmail          │
-                    │   Client's Inbox     │
-                    └──────────┬───────────┘
-                               │
-                               │ Gmail API
-                               ▼
-                    ┌──────────────────────┐
-                    │   Webhook / Polling  │
-                    │  New Email Detector  │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │   Email Processing   │
-                    │      Engine          │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │    AI Intelligence  │
-                    │                      │
-                    │ Intent Classification│
-                    │ Lead Detection       │
-                    │ Sentiment            │
-                    │ Data Extraction      │
-                    │ Priority             │
-                    │ Reply Generation     │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │   Workflow Engine    │
-                    │                      │
-                    │ IF Lead → CRM        │
-                    │ IF Support → Ticket  │
-                    │ IF Sales → Follow-up │
-                    │ IF Meeting → Calendar│
-                    └──────────┬───────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              ▼                ▼                ▼
-        ┌──────────┐    ┌────────────┐   ┌─────────────┐
-        │   CRM    │    │  Calendar  │   │  Dashboard  │
-        └──────────┘    └────────────┘   └─────────────┘
-              │
-              ▼
-        ┌──────────────┐
-        │ Follow-ups   │
-        │ & Sequences  │
-        └──────────────┘
+Domain
+   ↓
+DNS
+   ↓
+Mail Server
+   ├── SMTP
+   ├── IMAP
+   ├── DKIM
+   ├── SPF
+   ├── DMARC
+   ├── Spam filtering
+   └── Mail storage
+          ↓
+      Your Webmail
+```
+
+### Layer B — AI automation
+
+```text
+Incoming Email
+      ↓
+AI Email Agent
+      ↓
+Understand
+      ↓
+Classify
+      ↓
+Extract information
+      ↓
+Decide action
+      ↓
+┌─────────┬──────────┬──────────┬─────────────┐
+Reply    CRM        Task       Human        Follow-up
+         update     creation   escalation
+```
+
+That second layer is where your **agency's real value** is.
+
+---
+
+# 2. Don't build SMTP/IMAP yourself
+
+This is one of the biggest mistakes you could make.
+
+You want to **own the platform**, but you don't need to reinvent 40 years of email infrastructure.
+
+Use mature open-source components for the mail protocols and build your own interface, control panel, automation engine and AI layer.
+
+A sensible stack is:
+
+### Mail layer
+
+* **Postfix** — SMTP
+* **Dovecot** — IMAP/mailbox access
+* **Rspamd** — spam filtering
+* **ClamAV** — malware/virus scanning
+* **OpenDKIM** or equivalent DKIM implementation
+* **Let's Encrypt** — TLS certificates
+
+### Application layer
+
+* **Next.js** — webmail + admin dashboard
+* **Node.js/TypeScript** — API/workflows
+* **PostgreSQL** — application data
+* **Redis** — queues/cache
+* **Object storage** — attachments/backups
+
+### AI layer
+
+* LLM API initially
+* Embeddings/vector search where useful
+* Your own agent/workflow engine
+* Tool/function calling
+
+You can later replace individual components if your scale justifies it.
+
+---
+
+# 3. Infrastructure architecture
+
+Don't run the production system from your laptop.
+
+Use a VPS initially.
+
+```text
+                  INTERNET
+                     │
+                     ▼
+              ┌─────────────┐
+              │   DNS       │
+              │ Namecheap   │
+              └──────┬──────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │ VPS / Cloud │
+              └──────┬──────┘
+                     │
+        ┌────────────┴────────────┐
+        │                         │
+        ▼                         ▼
+   Mail Server               Application
+        │                         │
+ ┌──────┼────────┐        ┌───────┼─────────┐
+ │      │        │        │       │         │
+SMTP   IMAP   Filtering  API    Webmail     AI
+ │      │        │        │       │         │
+ └──────┴────────┘        └───────┴─────────┘
+                                  │
+                                  ▼
+                              PostgreSQL
+                                  │
+                                  ▼
+                              Redis/Queue
 ```
 
 ---
 
-# 3. Your technology stack
+# 4. Domain configuration
 
-Since you've already worked with **Express.js** and want production-level backend architecture, I would use:
+For every client domain, your platform needs DNS configuration.
 
-### Frontend
+At minimum:
 
-```text
-Next.js
-TypeScript
-Tailwind CSS
-shadcn/ui
-```
+### A record
 
-### Backend
+Points the mail/web server hostname to your server.
 
-```text
-Node.js
-Express.js
-TypeScript
-```
+### MX
 
-### Database
+Tells the internet where to deliver email.
 
-```text
-PostgreSQL
-Prisma ORM
-```
+### SPF
 
-### Queue / background jobs
+Authorizes your mail server to send for the domain.
 
-```text
-Redis
-BullMQ
-```
+### DKIM
 
-### AI
+Cryptographically signs outgoing email.
 
-Your architecture should support multiple AI providers:
+### DMARC
 
-```text
-AI Provider Layer
-       │
-       ├── Gemini
-       ├── OpenAI
-       └── Anthropic
-```
+Tells receiving providers how to handle authentication failures and provides reporting.
 
-Don't hard-code your entire application to one AI provider.
+### PTR / reverse DNS
 
-Create:
-
-```text
-AIProvider
-   ├── generateReply()
-   ├── classifyEmail()
-   ├── extractData()
-   ├── summarizeEmail()
-   └── analyzeIntent()
-```
-
-Then you can change models without rewriting the whole application.
-
-### Email
-
-```text
-Gmail API
-Google OAuth 2.0
-Gmail Watch / Pub/Sub
-```
-
-### Calendar
-
-```text
-Google Calendar API
-```
-
-### CRM
-
-Initially:
-
-```text
-HubSpot
-Salesforce
-Pipedrive
-GoHighLevel
-```
-
-Don't integrate all of them on day one.
-
-Start with **one CRM**, then build a generic integration architecture.
-
-### File storage
-
-```text
-S3-compatible storage
-```
+Your VPS IP should resolve back to your mail hostname.
 
 For example:
 
 ```text
-AWS S3
-Cloudflare R2
+mail.flowvello.com
+       ↓
+your-server-ip
+       ↓
+PTR
+       ↓
+mail.flowvello.com
 ```
 
-### Hosting
-
-Your existing:
-
-```text
-Heroku
-```
-
-But for a serious SaaS, you should eventually consider a platform that handles workers, databases, queues, and scaling more cleanly.
+This is critical for deliverability.
 
 ---
 
-# 4. The most important architecture decision: Multi-tenancy
+# 5. Your custom mailbox
 
-You want to sell this to multiple agencies.
+Do not start by cloning every Gmail feature.
 
-Therefore, you need:
+Your first version needs:
 
-```text
-Your SaaS
-│
-├── Agency A
-│     ├── Users
-│     ├── Gmail Accounts
-│     ├── AI Settings
-│     ├── Workflows
-│     └── CRM
-│
-├── Agency B
-│     ├── Users
-│     ├── Gmail Accounts
-│     ├── AI Settings
-│     ├── Workflows
-│     └── CRM
-│
-└── Agency C
-      ├── Users
-      ├── Gmail Accounts
-      ├── AI Settings
-      ├── Workflows
-      └── CRM
-```
+### Inbox
 
-Every database record should belong to an:
+* Read emails
+* Search
+* Sort
+* Star
+* Archive
+* Delete
+* Mark read/unread
+* Labels
 
-```text
-organization_id
-```
+### Compose
 
-Example:
+* To
+* CC
+* BCC
+* Subject
+* Rich text
+* Attachments
+* Signature
+* Drafts
 
-```text
-Organization
-    ↓
-Users
-    ↓
-Gmail Accounts
-    ↓
-Emails
-    ↓
-AI Conversations
-    ↓
-Workflows
-    ↓
-CRM Contacts
-```
+### Conversation view
 
-This is critical.
+Group emails into threads.
 
-If you build your own agency system first without multi-tenancy, then later try to convert it into SaaS, you will create unnecessary technical debt.
+### Contacts
+
+Store:
+
+* Name
+* Email
+* Company
+* Phone
+* Notes
+
+### Settings
+
+* Signature
+* Auto-reply
+* Forwarding
+* Password
+* Security
+* Notifications
+
+That gives you the basic Gmail-like experience.
 
 ---
 
-# 5. Gmail integration
+# 6. Then build your killer feature: AI Inbox
 
-Your main Gmail integration is:
+This is where you differentiate yourself.
 
-[Gmail API documentation](https://developers.google.com/gmail/api?utm_source=chatgpt.com)
-
-You need:
-
-```text
-Google Cloud Project
-       ↓
-OAuth Consent Screen
-       ↓
-OAuth 2.0 Credentials
-       ↓
-Gmail API
-       ↓
-User connects Gmail
-       ↓
-Your backend receives OAuth tokens
-       ↓
-System can read/send emails
-```
-
-You need to securely store:
-
-```text
-access_token
-refresh_token
-expires_at
-```
-
-Never expose Gmail OAuth tokens to your frontend.
-
----
-
-# 6. The actual AI email pipeline
-
-When an email arrives:
+Every incoming email passes through:
 
 ```text
 New Email
-    ↓
-Remove signatures
-    ↓
-Remove quoted replies
-    ↓
-Extract sender
-    ↓
-Extract subject
-    ↓
-Extract body
-    ↓
-Extract attachments
-    ↓
-AI Classification
+   ↓
+AI Analysis
+   ↓
+Intent
+   ↓
+Priority
+   ↓
+Customer/Lead?
+   ↓
+Required action
 ```
 
-The AI returns something like:
-
-```json
-{
-  "intent": "new_lead",
-  "priority": "high",
-  "sentiment": "positive",
-  "requires_reply": true,
-  "lead_score": 87,
-  "customer_name": "John Smith",
-  "company": "ABC Inc",
-  "phone": "+1...",
-  "requested_service": "Website Development"
-}
-```
-
-Then your workflow engine decides what to do.
+The AI could classify:
 
 ```text
-IF intent = new_lead
-        ↓
-Create CRM contact
-        ↓
-Assign sales person
-        ↓
-Generate reply
-        ↓
-Create follow-up sequence
-        ↓
-Notify sales team
-```
-
-This is the heart of the product.
-
----
-
-# 7. Your first AI automations
-
-Don't build 50 automations immediately.
-
-Build these **10 core automations** first.
-
-### Automation 1 — AI Email Classification
-
-Automatically classify:
-
-```text
-Lead
-Customer
-Support
-Sales
-Billing
+Sales Lead
+Customer Support
+Existing Customer
 Complaint
+Invoice
+Payment
+Quotation Request
+Meeting Request
+Job Application
 Spam
 Newsletter
-Partnership
 Internal
 Other
 ```
 
 ---
 
-### Automation 2 — AI Lead Detection
+# 7. Automatic email actions
 
-If someone sends:
-
-> "Hi, we need a website for our company."
-
-The system detects:
-
-```text
-Lead = Yes
-Service = Website
-Intent = Purchase
-Priority = High
-```
-
-Then:
-
-```text
-CRM → Create Lead
-```
-
----
-
-### Automation 3 — AI Reply Drafting
-
-AI reads:
-
-```text
-Client Email
-+
-Company Knowledge Base
-+
-Previous Conversation
-```
-
-Generates:
-
-```text
-Draft Reply
-```
-
-Your employee clicks:
-
-```text
-Approve & Send
-```
-
-This should be your **first MVP feature**.
-
-Do not start with fully autonomous replies.
-
----
-
-### Automation 4 — Auto Reply
-
-For safe, repetitive questions:
-
-```text
-"Do you offer SEO?"
-
-AI → Yes
-
-AI generates response
-       ↓
-Send automatically
-```
-
-But allow rules:
-
-```text
-Auto-send:
-    Low-risk FAQs
-
-Human approval:
-    Pricing
-    Contracts
-    Refunds
-    Complaints
-    Legal
-    Sensitive issues
-```
-
-This distinction is essential.
-
----
-
-### Automation 5 — Lead Follow-up
-
-Example:
-
-```text
-Day 0
-Lead arrives
-↓
-AI replies
-
-Day 2
-No response
-↓
-Follow-up email
-
-Day 5
-No response
-↓
-Second follow-up
-
-Day 10
-No response
-↓
-Final follow-up
-```
-
-The user should be able to configure this visually.
-
----
-
-### Automation 6 — Meeting Booking
-
-Client:
-
-> "Can we schedule a call?"
-
-AI:
-
-```text
-Check Google Calendar
-       ↓
-Find available slots
-       ↓
-Send options
-       ↓
-Client chooses
-       ↓
-Create Calendar event
-       ↓
-Confirmation email
-```
-
-This becomes significantly more valuable than simple email automation.
-
----
-
-### Automation 7 — Email → Task
-
-Example:
-
-> "Please send me the proposal by Friday."
-
-AI detects:
-
-```text
-Task:
-Send proposal
-
-Due:
-Friday
-
-Assigned:
-Sales Team
-```
-
-Creates task.
-
----
-
-### Automation 8 — Attachment Intelligence
-
-Incoming:
-
-```text
-invoice.pdf
-contract.pdf
-proposal.pdf
-```
-
-AI:
-
-```text
-Extract document
-       ↓
-Identify type
-       ↓
-Extract important information
-       ↓
-Save metadata
-       ↓
-Trigger workflow
-```
+Give the AI tools.
 
 For example:
 
-```text
-Invoice received
-       ↓
-Notify finance
-```
+### Tool: `create_lead`
+
+Creates a CRM lead.
+
+### Tool: `update_customer`
+
+Updates customer information.
+
+### Tool: `create_task`
+
+Creates a task for an employee.
+
+### Tool: `schedule_followup`
+
+Schedules an automatic follow-up.
+
+### Tool: `send_reply`
+
+Sends an email after approval rules are satisfied.
+
+### Tool: `forward_email`
+
+Forwards to the appropriate department.
+
+### Tool: `book_appointment`
+
+Connects to a calendar.
+
+### Tool: `generate_quote`
+
+Creates a quotation from structured information.
+
+### Tool: `send_notification`
+
+Alerts the business owner/team.
+
+This turns your mailbox into an **AI employee**, rather than just an inbox.
 
 ---
 
-### Automation 9 — Customer Support
+# 8. Build approval levels
 
-Email:
+Do **not** let the AI automatically send everything.
 
-> "My account isn't working."
+Give businesses three modes.
 
-AI:
+### Level 1 — Suggest
 
-```text
-Intent = Support
-Priority = Medium
-```
+AI drafts the reply.
 
-Then:
+Human clicks:
 
-```text
-Search Knowledge Base
-       ↓
-Generate answer
-       ↓
-Send or request approval
-```
+**Send**
 
----
+### Level 2 — Auto-send safe replies
 
-### Automation 10 — Daily AI Summary
+AI can automatically respond to things such as:
 
-Every morning:
+* Business hours
+* Location
+* Basic FAQs
+* Appointment confirmations
+* Order status
 
-```text
-Good morning.
+### Level 3 — Autonomous
 
-Today's email summary:
+AI can:
 
-12 new leads
-5 urgent emails
-8 support requests
-3 unanswered emails
-2 high-value opportunities
+* qualify leads
+* follow up
+* schedule meetings
+* update CRM
+* handle routine support
 
-Top priority:
-1. ABC Corp — $X opportunity
-2. XYZ — Demo request
-3. John — Contract question
-```
+but sensitive actions require human approval.
 
-This is a strong feature for agency owners.
+This is much safer.
 
 ---
 
-# 8. The AI Knowledge Base
+# 9. Build an AI knowledge base
 
-This is where your system becomes much smarter.
-
-Each agency should have:
+Each business gets its own knowledge base.
 
 ```text
-Company Information
-Services
-Pricing
-FAQs
-Policies
-Case Studies
-Team Members
-Contact Information
-Tone of Voice
-Sales Process
-Refund Policy
-Business Hours
+Client
+│
+├── Company information
+├── Services
+├── Products
+├── Prices
+├── FAQs
+├── Policies
+├── Staff
+├── Locations
+├── Business hours
+└── Custom instructions
 ```
 
-Example:
+The AI only uses that client's information.
 
-```text
-Agency:
-FlowVello
-
-Services:
-Web Development
-AI Automation
-SEO
-
-Tone:
-Professional
-Concise
-Friendly
-
-Default CTA:
-Book a discovery call
-
-Never:
-Promise guaranteed results
-Offer discounts without approval
-Discuss internal processes
-```
-
-Then the AI uses this information to generate replies.
-
-Technically:
-
-```text
-Email
-   +
-Conversation History
-   +
-Company Knowledge
-   +
-Customer Data
-   ↓
-AI
-   ↓
-Response
-```
-
-Later, you can implement RAG with:
-
-```text
-Embeddings
-Vector Database
-Retrieval
-LLM
-```
-
-But don't start with RAG if your initial knowledge base is small. Start with structured company data and document retrieval.
+This is what makes the same platform work for different industries.
 
 ---
 
-# 9. Workflow Builder
+# 10. Build multi-tenancy from day one
 
-This is where your product becomes sellable.
+This is extremely important.
 
-The agency should be able to create:
+Don't build:
 
 ```text
-WHEN
-New email received
-
-IF
-Email contains "website"
-
-THEN
-Classify as Lead
-
-THEN
-Create CRM contact
-
-THEN
-Generate AI reply
-
-THEN
-Send for approval
-
-THEN
-If no response after 2 days
-
-THEN
-Send follow-up
+Flowvello server
 ```
 
-Visual structure:
+Build:
+
+```text
+AI Mail Platform
+│
+├── Tenant 001
+│   ├── domains
+│   ├── mailboxes
+│   ├── users
+│   ├── AI settings
+│   └── workflows
+│
+├── Tenant 002
+│   ├── domains
+│   ├── mailboxes
+│   ├── users
+│   ├── AI settings
+│   └── workflows
+│
+└── Tenant 003
+```
+
+Every database object needs a tenant relationship.
+
+That allows you to onboard another company without deploying another application.
+
+---
+
+# 11. Build an admin dashboard
+
+You need two dashboards.
+
+## Your dashboard
+
+You control:
+
+* Clients
+* Domains
+* Mailboxes
+* Server status
+* Storage
+* Email volume
+* Spam
+* AI usage
+* Automation usage
+* Billing
+* Logs
+* Errors
+* Suspended accounts
+
+## Client dashboard
+
+Client sees:
+
+* Mailboxes
+* Employees
+* AI settings
+* Knowledge base
+* Automation rules
+* CRM
+* Analytics
+* Billing
+* Domain settings
+
+---
+
+# 12. Build the automation engine
+
+This is what turns your system into a sellable product.
+
+Create:
 
 ```text
 TRIGGER
    ↓
 CONDITION
    ↓
-AI ACTION
-   ↓
-INTEGRATION
+ACTION
    ↓
 DELAY
+   ↓
+CONDITION
    ↓
 ACTION
 ```
 
-Your workflow engine could eventually resemble:
+Example:
 
 ```text
-Zapier
-+
-AI Agent
-+
-Gmail
-+
-CRM
+WHEN:
+New email arrives
+
+IF:
+Email = sales inquiry
+
+THEN:
+Create CRM lead
+
+THEN:
+AI drafts response
+
+THEN:
+Send automatically
+
+WAIT:
+24 hours
+
+IF:
+No response
+
+THEN:
+Send follow-up
+
+WAIT:
+3 days
+
+IF:
+Still no response
+
+THEN:
+Notify salesperson
 ```
 
-That is a much stronger product than "AI Gmail automation."
+Now you have a **general-purpose automation engine**.
 
 ---
 
-# 10. Dashboard
+# 13. Universal workflows
 
-Your SaaS dashboard should have:
+Build these once.
 
-### Overview
-
-```text
-Emails Processed
-AI Replies
-Human Replies
-Leads
-Follow-ups
-Time Saved
-```
-
-### Inbox
-
-```text
-All
-Leads
-Urgent
-Support
-Sales
-Unanswered
-AI Drafts
-```
-
-### AI Drafts
+### Lead workflow
 
 ```text
 Email
-AI-generated response
-Edit
-Approve
-Reject
+→ AI identifies lead
+→ CRM
+→ AI response
+→ Follow-up
+→ Salesperson notification
 ```
 
-### Automations
+### Customer support
 
 ```text
-Automation Name
-Status
-Runs
-Success Rate
-```
-
-### Leads
-
-```text
-Name
 Email
-Company
-Source
-Lead Score
-Status
-Assigned To
+→ AI understands problem
+→ Knowledge base
+→ Response
+→ Ticket
+→ Human escalation if needed
 ```
 
-### Knowledge Base
+### Appointment
 
 ```text
-Company Info
-FAQs
+Email
+→ Detect booking request
+→ Calendar
+→ Book
+→ Confirmation
+→ Reminder
+```
+
+### Quote request
+
+```text
+Email
+→ Extract requirements
+→ Create quote data
+→ Notify salesperson
+→ Draft response
+```
+
+### Invoice
+
+```text
+Invoice email
+→ Extract invoice
+→ Store document
+→ Extract amount/date/vendor
+→ Accounting workflow
+```
+
+### Complaint
+
+```text
+Complaint
+→ High priority
+→ Create ticket
+→ Notify manager
+→ AI acknowledgement
+→ Human resolution
+```
+
+### Reactivation
+
+```text
+Customer database
+→ Find inactive customers
+→ AI creates personalized email
+→ Send campaign
+→ Track response
+```
+
+---
+
+# 14. Now make it universal across your niches
+
+You don't rebuild the system.
+
+You change:
+
+**Knowledge + prompts + workflows + integrations.**
+
+### Dentist
+
+AI knows:
+
+* Treatments
+* Prices
+* Opening hours
+* Doctors
+* Appointment rules
+
+### Real estate
+
+AI knows:
+
+* Properties
+* Locations
+* Prices
+* Property requirements
+* Agents
+
+### Solar
+
+AI knows:
+
+* Packages
+* Installation
+* Pricing
+* Qualification requirements
+
+### E-commerce
+
+AI connects to:
+
+* Products
+* Orders
+* Shipping
+* Returns
+* Refunds
+
+### School
+
+AI knows:
+
+* Admissions
+* Courses
+* Fees
+* Deadlines
+* Requirements
+
+### Hotel
+
+AI knows:
+
+* Rooms
+* Rates
+* Availability
+* Check-in
+* Amenities
+
+Same platform.
+
+---
+
+# 15. Connect WhatsApp later
+
+This is where your existing WhatsApp-agent idea becomes powerful.
+
+Instead of:
+
+```text
+WhatsApp automation
+```
+
+and
+
+```text
+Email automation
+```
+
+you eventually have:
+
+```text
+                 AI CUSTOMER ENGINE
+                         │
+          ┌──────────────┼──────────────┐
+          ↓              ↓              ↓
+       WhatsApp        Email          Voice
+          │              │              │
+          └──────────────┼──────────────┘
+                         ↓
+                        CRM
+                         ↓
+                    Automation
+                         ↓
+                      Analytics
+```
+
+The same customer can move between channels.
+
+Example:
+
+**Email inquiry → AI qualifies → WhatsApp follow-up → phone call → appointment → CRM.**
+
+That's significantly more valuable than selling a mailbox alone.
+
+---
+
+# 16. Security architecture
+
+Do not treat this as optional.
+
+You will be storing private business communications.
+
+Implement:
+
+* HTTPS/TLS everywhere
+* Password hashing
+* MFA
+* Session management
+* Role-based access
+* Tenant isolation
+* Encryption at rest where appropriate
+* Encryption in transit
+* Audit logs
+* Rate limiting
+* Login protection
+* Backup encryption
+* Attachment scanning
+* API authentication
+* Secret management
+* Admin activity logging
+* Data deletion procedures
+
+And **never allow one tenant's AI retrieval system to access another tenant's data.**
+
+That is a catastrophic failure if you get it wrong.
+
+---
+
+# 17. Email security and deliverability
+
+This deserves its own subsystem.
+
+Monitor:
+
+```text
+SPF
+DKIM
+DMARC
+PTR
+TLS
+Bounce rate
+Spam complaints
+IP reputation
+Domain reputation
+Authentication failures
+```
+
+You also need:
+
+* Outbound rate limits
+* Abuse detection
+* Suspicious-account detection
+* Automatic suspension
+* Bounce processing
+* Complaint processing
+
+Otherwise someone can sign up and use your platform to send spam, damaging the reputation of your entire server.
+
+**This is one of the biggest risks of operating your own mail platform.**
+
+---
+
+# 18. Backups
+
+Never store the only copy of email on the mail server.
+
+Use:
+
+```text
+Primary VPS
+     ↓
+Daily backup
+     ↓
+Separate storage
+     ↓
+Encrypted
+```
+
+Keep multiple recovery points.
+
+Test restoring them.
+
+A backup that has never been successfully restored is not a reliable backup.
+
+---
+
+# 19. Development roadmap
+
+Don't attempt the entire thing at once.
+
+## Phase 1 — Mail infrastructure
+
+Build:
+
+* VPS
+* DNS
+* SMTP
+* IMAP
+* DKIM
+* SPF
+* DMARC
+* TLS
+* Spam filtering
+* Mail storage
+
+**Goal:** send and receive reliably.
+
+---
+
+## Phase 2 — Custom webmail
+
+Build:
+
+* Login
+* Inbox
+* Threading
+* Compose
+* Drafts
+* Search
+* Attachments
+* Contacts
+* Settings
+
+**Goal:** a functional Gmail-like mailbox.
+
+---
+
+## Phase 3 — Admin panel
+
+Build:
+
+* Organizations
+* Domains
+* Users
+* Mailboxes
+* Storage limits
+* Roles
+* Password resets
+* Logs
+
+**Goal:** create a new client without touching the server manually.
+
+---
+
+## Phase 4 — AI
+
+Add:
+
+* Email classification
+* Summarization
+* Reply drafting
+* Knowledge base
+* AI search
+* Lead extraction
+* Intent detection
+
+**Goal:** AI-assisted mailbox.
+
+---
+
+## Phase 5 — Automation engine
+
+Add:
+
+* Triggers
+* Conditions
+* Actions
+* Delays
+* Webhooks
+* Scheduled jobs
+* AI actions
+
+**Goal:** automated mailbox.
+
+---
+
+## Phase 6 — CRM
+
+Add:
+
+* Contacts
+* Companies
+* Leads
+* Deals
+* Tasks
+* Pipeline
+* Notes
+* Activities
+
+**Goal:** turn email into a sales system.
+
+---
+
+## Phase 7 — Multi-channel
+
+Connect:
+
+* WhatsApp
+* Website chat
+* Voice
+* Forms
+
+**Goal:** unified customer communication.
+
+---
+
+## Phase 8 — Multi-tenant SaaS
+
+Add:
+
+* Client onboarding
+* Subscription plans
+* Usage limits
+* Billing
+* Tenant isolation
+* Client branding
+
+**Goal:** sell the same platform repeatedly.
+
+---
+
+# 20. Your final client experience
+
+A client signs up.
+
+They enter:
+
+```text
+Company: ABC Solar
+Domain: abcsolar.com
+```
+
+Your system guides them through DNS setup.
+
+Then:
+
+```text
+info@abcsolar.com
+sales@abcsolar.com
+support@abcsolar.com
+```
+
+are created.
+
+They upload:
+
+```text
 Services
-Documents
-AI Instructions
+Pricing
+FAQs
+Policies
+Company information
 ```
 
-### Integrations
+Then select:
 
 ```text
-Gmail
-Google Calendar
-CRM
-Slack
-WhatsApp
+AI Email Agent: ON
+Lead Detection: ON
+Auto Follow-up: ON
+CRM: ON
+Appointment Booking: ON
 ```
 
-### Analytics
+The system is ready.
 
-```text
-Emails handled
-Response time
-Leads generated
-AI accuracy
-Human approval rate
-Time saved
-```
+**You shouldn't need to write new code for ABC Solar.**
 
 ---
 
-# 11. Your development roadmap
+# 21. Your agency's business model
 
-I recommend this exact order.
+Don't charge only for "an email account."
 
-## Phase 1 — Internal MVP
+Sell the **business automation system**.
 
-Build only:
+### Basic
 
-```text
-User Authentication
-        ↓
-Agency / Organization
-        ↓
-Connect Gmail
-        ↓
-Receive Emails
-        ↓
-Store Emails
-        ↓
-AI Classification
-        ↓
-AI Reply Draft
-        ↓
-Human Approval
-        ↓
-Send Email
-```
+Mailbox + custom webmail
 
-This is your first usable system.
+### Business
 
----
+Mailbox + AI assistant + knowledge base
 
-## Phase 2 — Agency Automation
+### Sales
 
-Add:
+Business + CRM + lead detection + follow-ups
 
-```text
-Lead Detection
-CRM Integration
-AI Knowledge Base
-Email Follow-ups
-Google Calendar
-Task Creation
-Team Members
-Roles & Permissions
-```
+### Automation
 
-Now you can actually use it in your own agency.
+Sales + workflows + booking + document processing
+
+### Enterprise
+
+Everything + WhatsApp + voice + custom integrations
+
+Then charge:
+
+**Setup fee + monthly subscription.**
+
+Your infrastructure cost remains relatively predictable while each additional client increases recurring revenue.
 
 ---
 
-## Phase 3 — SaaS
+# 22. What I would NOT build initially
 
-Add:
+Don't waste months building:
 
-```text
-Multi-tenancy
-Subscription Billing
-Usage Limits
-Organization Settings
-Multiple Gmail Accounts
-Multiple Users
-Audit Logs
-API Keys
-Webhook System
-```
+* Gmail-level mobile apps
+* Massive email storage
+* Video meetings
+* Google Drive clone
+* Calendar clone
+* Office suite
+* Complex collaboration features
+* Your own SMTP protocol implementation
+* Your own IMAP protocol implementation
+* Your own AI model
 
----
+Those are distractions.
 
-## Phase 4 — Advanced AI
+Your competitive advantage should be:
 
-Add:
-
-```text
-AI Agent
-RAG
-Vector Database
-Advanced Lead Scoring
-Attachment Analysis
-Autonomous Workflows
-AI Voice
-WhatsApp
-CRM Intelligence
-```
+**Email infrastructure + AI + automation + vertical configuration.**
 
 ---
 
-# 12. The API/integration stack
+# 23. The actual product you should aim for
 
-Your initial system could require:
+The end state isn't:
 
-| Function        | API                         |
-| --------------- | --------------------------- |
-| Email           | Gmail API                   |
-| Authentication  | Google OAuth                |
-| Calendar        | Google Calendar API         |
-| AI              | Gemini / OpenAI / Anthropic |
-| Database        | PostgreSQL                  |
-| Background Jobs | Redis + BullMQ              |
-| CRM             | HubSpot API initially       |
-| Files           | S3 / Cloudflare R2          |
-| Notifications   | Slack API                   |
-| Billing         | Stripe                      |
-| Analytics       | Your own backend            |
+> "I built my own Gmail."
 
-Later:
+That's technically interesting but commercially weak.
+
+The stronger product is:
+
+> **"We give businesses their own professional email infrastructure with an AI employee that automatically handles leads, customer emails, follow-ups, appointments, documents and CRM operations."**
+
+And your architecture becomes:
 
 ```text
-WhatsApp Cloud API
-Twilio
-GoHighLevel
-Salesforce
-Pipedrive
-HubSpot
-Microsoft Graph / Outlook
+                    YOUR PLATFORM
+                         │
+          ┌──────────────┼──────────────┐
+          ↓              ↓              ↓
+        Email         WhatsApp        Voice
+          │              │              │
+          └──────────────┼──────────────┘
+                         ↓
+                  ┌─────────────┐
+                  │ AI ENGINE   │
+                  └──────┬──────┘
+                         ↓
+                ┌────────────────┐
+                │ KNOWLEDGE BASE │
+                └───────┬────────┘
+                        ↓
+              ┌───────────────────┐
+              │ AUTOMATION ENGINE │
+              └─────────┬─────────┘
+                        ↓
+             ┌────────────────────┐
+             │ CRM + DATABASE     │
+             └─────────┬──────────┘
+                       ↓
+                 DASHBOARD
 ```
 
-Do **not** build all integrations at once.
+**Build the email infrastructure first, then the AI layer, then automation, then multi-tenancy.**
 
----
-
-# 13. The biggest mistake you should avoid
-
-You said:
-
-> "all of the Gmail automations for the agencies"
-
-That's too broad.
-
-If you try to automate everything, you'll build a bloated platform that doesn't solve one painful problem exceptionally well.
-
-Your initial positioning should be:
-
-> **"AI-powered email operations for agencies that automatically captures leads, drafts replies, follows up, and keeps the CRM updated."**
-
-That's a clear business outcome.
-
-Then you can expand.
-
----
-
-# 14. Your best first product
-
-If I were building this from your position, I would build:
-
-```text
-             AI EMAIL AGENT
-                   │
-       ┌───────────┴───────────┐
-       │                       │
-    GMAIL                   AI BRAIN
-       │                       │
-       └───────────┬───────────┘
-                   │
-          EMAIL UNDERSTANDING
-                   │
-       ┌───────────┼───────────┐
-       │           │           │
-     LEADS      SUPPORT      SALES
-       │           │           │
-       ▼           ▼           ▼
-     CRM        TICKETS     FOLLOW-UP
-       │           │           │
-       └───────────┼───────────┘
-                   │
-             HUMAN APPROVAL
-                   │
-                   ▼
-             SEND EMAIL
-```
-
-### Your killer workflow:
-
-**New lead arrives → AI understands it → extracts lead information → creates CRM lead → generates personalized reply → human approves → sends → schedules follow-up → detects response → updates CRM → notifies salesperson.**
-
-That one workflow alone can be valuable enough to sell.
-
----
-
-## My recommended build sequence
-
-```text
-WEEK 1
-Architecture
-Database
-Authentication
-Multi-tenancy
-
-WEEK 2
-Google OAuth
-Gmail API
-Email synchronization
-
-WEEK 3
-Email processing
-AI classification
-AI extraction
-
-WEEK 4
-AI reply generation
-Human approval
-Send email
-
-WEEK 5
-Knowledge Base
-Company AI instructions
-
-WEEK 6
-Lead detection
-CRM integration
-
-WEEK 7
-Follow-up engine
-Background jobs
-
-WEEK 8
-Google Calendar
-Meeting booking
-
-WEEK 9
-Dashboard
-Analytics
-Team management
-
-WEEK 10
-Security
-Logging
-Error handling
-Production deployment
-```
-
-The **correct first milestone** is not "build a full AI Gmail automation platform." It is:
-
-> **Connect one agency's Gmail → automatically identify leads → generate context-aware replies → approve/send → follow up → update CRM.**
-
-Once that works reliably for your own agency, you have a **real product to sell**, not a theoretical SaaS.
+Do not try to build the whole platform in one sprint. The first milestone should simply be: **`contact@flowvello.com` can reliably send and receive mail through your own server and your own webmail.** Everything else builds on that.
